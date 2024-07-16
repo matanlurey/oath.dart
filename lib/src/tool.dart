@@ -150,6 +150,11 @@ final class Toolbox {
   Future<void> forever() {
     return Completer<void>().future;
   }
+
+  /// Opens the given [url] in the default browser.
+  Future<void> browse(Uri url) {
+    return io.Process.run('open', [url.toString()]);
+  }
 }
 
 /// An opaque object that represents a cleanup task handle.

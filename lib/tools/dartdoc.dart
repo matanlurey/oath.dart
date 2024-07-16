@@ -17,10 +17,14 @@ enum DartdocMode {
 /// Runs the `dartdoc` tool with the given options.
 ///
 /// - [command]: The command to run. Defaults to `['dart', 'doc']`.
+/// - [mode]: The mode to run `dartdoc` in. Defaults to [DartdocMode.generate].
+/// - [tools]: The toolbox to use instead of the default one.
+/// - [browse]: Whether to open the generated documentation in the browser.
 Future<void> runDartdoc({
   List<String> command = const ['dart', 'doc'],
   DartdocMode mode = DartdocMode.generate,
   Toolbox? tools,
+  bool browse = false,
 }) async {
   final isPreview = mode == DartdocMode.preview;
   return runTool((tools) async {
@@ -58,8 +62,12 @@ Future<void> runDartdoc({
       final server = await shelf_io.serve(handler, 'localhost', 0);
       tools.addCleanupTask(server.close);
 
-      final url = 'http://localhost:${server.port}';
+      final url = Uri.http('localhost:${server.port}', '/');
       tools.stdout.writeln('Serving documentation at $url');
+
+      if (browse) {
+        await tools.browse(url);
+      }
 
       await tools.forever();
     }
