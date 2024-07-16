@@ -25,7 +25,7 @@ Future<void> runDartdoc({
   List<String> command = const ['dart', 'doc'],
   DartdocMode mode = DartdocMode.generate,
   Toolbox? tools,
-  int port = 0,
+  int? port,
   bool browse = false,
 }) async {
   final isPreview = mode == DartdocMode.preview;
@@ -61,7 +61,7 @@ Future<void> runDartdoc({
         outputDir.path,
         defaultDocument: 'index.html',
       );
-      final server = await shelf_io.serve(handler, 'localhost', port);
+      final server = await shelf_io.serve(handler, 'localhost', port ?? 0);
       tools.addCleanupTask(server.close);
 
       final url = Uri.http('localhost:${server.port}', '/');
