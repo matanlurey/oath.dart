@@ -22,43 +22,45 @@ enum DartdocMode {
 /// - [port]: The port to serve the documentation n. Defaults to a random port.
 /// - [browse]: Whether to open the generated documentation in the browser.
 Future<void> runDartdoc({
+  required bool preview,
+  required bool generate,
   List<String> command = const ['dart', 'doc'],
-  DartdocMode mode = DartdocMode.generate,
   Toolbox? tools,
   int? port,
   bool browse = false,
   String? outDir,
 }) async {
-  final isPreview = mode == DartdocMode.preview;
   return runTool((tools) async {
     io.Directory? outputDir;
-    if (isPreview) {
+    if (preview) {
       outputDir = outDir != null
           ? io.Directory(outDir)
           : await tools.getTempDir('dartdoc');
     }
-    final [name, ...args] = command;
-    final dartdoc = await io.Process.start(
-      name,
-      [
-        ...args,
-        if (outputDir != null) '--output=${outputDir.path}',
-      ],
-    );
-    tools.addCleanupTask(dartdoc.kill);
-
-    dartdoc.stdout.transform(const Utf8Decoder()).listen(tools.stdout.write);
-    dartdoc.stderr.transform(const Utf8Decoder()).listen(tools.stderr.write);
-
-    final exitCode = await dartdoc.exitCode;
-    if (exitCode != 0) {
-      throw io.ProcessException(
+    if (generate) {
+      final [name, ...args] = command;
+      final dartdoc = await io.Process.start(
         name,
-        args,
-        'Failed with exit code $exitCode.',
+        [
+          ...args,
+          if (outputDir != null) '--output=${outputDir.path}',
+        ],
       );
+      tools.addCleanupTask(dartdoc.kill);
+
+      dartdoc.stdout.transform(const Utf8Decoder()).listen(tools.stdout.write);
+      dartdoc.stderr.transform(const Utf8Decoder()).listen(tools.stderr.write);
+
+      final exitCode = await dartdoc.exitCode;
+      if (exitCode != 0) {
+        throw io.ProcessException(
+          name,
+          args,
+          'Failed with exit code $exitCode.',
+        );
+      }
     }
-    if (mode == DartdocMode.preview) {
+    if (preview) {
       outputDir!;
       final handler = createStaticHandler(
         outputDir.path,
