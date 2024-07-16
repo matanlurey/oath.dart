@@ -17,16 +17,20 @@ enum CoverageMode {
 
 /// Runs the `coverage` tool with the given options.
 ///
-/// - [command]: The command to run.
-///   Defaults to `['dart', 'run', 'coverage:test_with_coverage']`.
-///
-/// - [mode]: The mode to run `coverage` in.
-///   Defaults to [CoverageMode.generate].
+/// - [command]: The command to run. Defaults to
+///   `['dart', 'run', 'coverage:test_with_coverage']`.
+/// - [generator]: The command to run to generate the HTML report. Defaults to
+///   `['genhtml']`.
+/// - [mode]: The mode to run `coverage` in. Defaults to
+///   [CoverageMode.generate].
+/// - [tools]: The toolbox to use instead of the default one.
+/// - [browse]: Whether to open the generated coverage report in the browser.
 Future<void> runCoverage({
   List<String> command = const ['dart', 'run', 'coverage:test_with_coverage'],
   List<String> generator = const ['genhtml'],
   CoverageMode mode = CoverageMode.generate,
   Toolbox? tools,
+  bool browse = false,
 }) async {
   final isPreview = mode == CoverageMode.preview;
   return runTool(
@@ -95,8 +99,12 @@ Future<void> runCoverage({
         final server = await shelf_io.serve(handler, 'localhost', 0);
         tools.addCleanupTask(server.close);
 
-        final url = 'http://localhost:${server.port}';
+        final url = Uri.http('localhost:${server.port}', '/');
         tools.stdout.writeln('Serving coverage report at $url');
+
+        if (browse) {
+          await tools.browse(url);
+        }
 
         await tools.forever();
       }
