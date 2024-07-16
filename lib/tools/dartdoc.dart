@@ -27,12 +27,15 @@ Future<void> runDartdoc({
   Toolbox? tools,
   int? port,
   bool browse = false,
+  String? outDir,
 }) async {
   final isPreview = mode == DartdocMode.preview;
   return runTool((tools) async {
     io.Directory? outputDir;
     if (isPreview) {
-      outputDir = await tools.getTempDir('dartdoc');
+      outputDir = outDir != null
+          ? io.Directory(outDir)
+          : await tools.getTempDir('dartdoc');
     }
     final [name, ...args] = command;
     final dartdoc = await io.Process.start(
