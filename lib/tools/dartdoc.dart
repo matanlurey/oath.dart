@@ -32,10 +32,10 @@ Future<void> runDartdoc({
 }) async {
   return runTool((tools) async {
     io.Directory? outputDir;
-    if (preview) {
-      outputDir = outDir != null
-          ? io.Directory(outDir)
-          : await tools.getTempDir('dartdoc');
+    if (outDir != null) {
+      outputDir = io.Directory(outDir);
+    } else if (preview) {
+      outputDir = await tools.getTempDir('dartdoc');
     }
     if (generate) {
       final [name, ...args] = command;
